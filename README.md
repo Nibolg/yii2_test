@@ -53,3 +53,10 @@ use command
 yii migrate
 ```
 
+### Verifying the installation
+
+After installation is done, either configure your web server (see next section) or use the built-in PHP web server by running the following console command while in the project web directory:
+```
+php yii serve
+```
+
