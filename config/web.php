@@ -61,7 +61,7 @@ $config = [
                     'options' => [
                         'auto_reload' => true,
                     ],
-                    'globals' => ['html' => '\yii\helpers\Html'],
+                    'globals' => ['html' => '\yii\helpers\Html', 'Url' => ['class' => '\yii\helpers\Url']],
                     'uses' => ['yii\bootstrap'],
                 ]
             ],

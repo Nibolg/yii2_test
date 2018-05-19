@@ -2,13 +2,13 @@
 
 namespace app\controllers;
 
+use app\models\Order;
+use app\models\Service;
 use Yii;
+use yii\data\Pagination;
 use yii\filters\AccessControl;
 use yii\web\Controller;
-use yii\web\Response;
 use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
 
 class SiteController extends Controller
 {
@@ -61,69 +61,29 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        //return $this->render('index');
-        return $this->renderPartial('index.twig', ['username' => 'Alex']);
-    }
-
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin()
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+        $params = Yii::$app->request->get();
+        $query =  Order::search($params);
+        $stat = Service::getStat();
+        $services = array();
+        
+        foreach ($stat as $service) {
+            $services[$service['id']] = $service;
         }
+        
+        $countQuery = clone $query;
+        $pages = new Pagination(['totalCount' => $countQuery->count(), 'pageSize' => Order::getPageSize()]);
+        $pages->pageSizeParam = false;
+        $models = $query->offset($pages->offset)
+            ->limit($pages->limit)->all();
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
+        return $this->renderPartial('index.twig',  [
+            'models' => $models,
+            'pages' => $pages,
+            'modes' => Order::getModes(),
+            'statuses' => Order::getStatuses(),
+            'services' => $services,
+            'currentParams' => $params
         ]);
     }
 
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
-     * Displays contact page.
-     *
-     * @return Response|string
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
-
-            return $this->refresh();
-        }
-        return $this->render('contact', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Displays about page.
-     *
-     * @return string
-     */
-    public function actionAbout()
-    {
-        return $this->render('about');
-    }
 }
